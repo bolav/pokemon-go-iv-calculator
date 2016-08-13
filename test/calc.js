@@ -57,6 +57,12 @@ describe('calculator', function () {
   describe('TTK_def', function () {}),
   describe('DPS_atk', function () {}),
   describe('DPS_def', function () {}),
+  describe('moveSet', function () {
+    it('should return correct power', function () {
+      assert.equal(calc.moveSet(atk1).fastPower, 9, 'Correct power is 9');
+      assert.equal(calc.moveSet(atk2).fastPower, 15, 'Correct power is 15');
+    })
+  }),
   describe('pokemonLevel', function () {
     it('should return correct level', function () {
       assert.equal(calc.pokemonLevel(atk1).level, 20, 'level is 20');

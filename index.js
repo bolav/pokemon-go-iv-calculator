@@ -256,21 +256,46 @@ function getPokedex(pokemon) {
 
 }
 
+function getIVs(pokemon) {
+	if (pokemon.ivs) {
+		return pokemon.ivs;
+	}
+	if (("attackIV" in pokemon) && ("defenseIV" in pokemon) && ("staminaIV" in pokemon)) {
+		var iv = { 
+			attack: +pokemon.attackIV,
+			defense: +pokemon.defenseIV,
+			stamina: +pokemon.staminaIV
+		}
+		pokemon.ivs = iv;
+		return iv;
+	}
+}
+
 function pokemonAtk (pokemon) {
 	// =INDEX($CpM_RAW.$B$2:$B$80,$AA2*2-1)*(INDEX($PokeDex_RAW.C$2:E$152,$Y2,2)+L2)
-	// cpm * 
+
 	var lvl = pokemonLevel(pokemon);
 	var pd  = getPokedex(pokemon);
-	return lvl.cpScalar * (pd.attack + pokemon.attackIV);
-	// console.log(lvl.cpScalar);
-	// return 117.7;
+	var iv  = getIVs(pokemon);
+
+	return Math.round(lvl.cpScalar * (pd.attack + iv.attack) * 10) / 10;
+}
+
+function moveSet(pokemon) {
+	return {
+		fastPower: 9,
+	}
 }
 
 function fastDPS (attacker, defender) {
+	// My_Team.AL
 	/* =ROUND((($Inputs.$B$30*$AC2*INDEX($Move_Sets.$O$3:$O$854,$Z2)/$B$18)*INDEX($Move_Sets.$R$3:$R$854,$Z2)*AQ2+$Inputs.$B$31),0)/INDEX($Move_Sets.$P$3:$P$854,$Z2) */
+	//                             9
 	return 7.41;
 
-	// Math.Round(((damageMultiplier * atk(attacker) * move_sets_thing / def(defender) * move_sets_thing * fast_modifier ))) / move_sets_thing
+	// Math.round((( damageMultiplier * pokemonAtk(attacker) * moveSet(attacker).fastPower )))
+
+	// Math.Round(((damageMultiplier * atk(attacker) * moveSet(attacker).fastPower / def(defender) * move_sets_thing * fast_modifier ))) / move_sets_thing
 
 }
 
@@ -282,6 +307,7 @@ module.exports = {
 
 	fastDPS,
 	pokemonAtk,
-	pokemonLevel
+	pokemonLevel,
+	moveSet
 };
 
