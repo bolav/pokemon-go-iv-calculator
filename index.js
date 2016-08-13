@@ -3,6 +3,9 @@ const _ = require('underscore');
 const pokedex = require('./support/pokedex');
 const levelUpData = require('./support/levelUpData');
 const grader = require('./support/grader');
+const fastMoves = require('./support/fastMovesData');
+const specialMoves = require('./support/specialMovesData');
+const multipliers = require('./support/multipliers');
 
 function testHP(hp, iv, levelData, pokemon) {
 	return hp == parseInt(Math.floor((pokemon.stamina + iv) * levelData.cpScalar), 10);
@@ -201,45 +204,64 @@ function pokemonLevel (pokemon) {
 	// level + 1
 	// max
 	// level + 0.5
-	var min = { level: 81 };
-	var max = { level: 0 };
-	var potentialLevels = levelUpData.levelsByDust(pokemon.star_dust);
-	for (var i = 0; i < potentialLevels.length; i++) {
-		if (max.level < potentialLevels[i].level) {
-			max = potentialLevels[i];
+	if (pokemon.star_dust) {
+		var min = { level: 81 };
+		var max = { level: 0 };
+		var potentialLevels = levelUpData.levelsByDust(pokemon.star_dust);
+		for (var i = 0; i < potentialLevels.length; i++) {
+			if (max.level < potentialLevels[i].level) {
+				max = potentialLevels[i];
+			}
+			if (min.level > potentialLevels[i].level) {
+				min = potentialLevels[i];
+			}
 		}
-		if (min.level > potentialLevels[i].level) {
-			min = potentialLevels[i];
-		}
-	}
 
-	var lvl = max;
-	var foundLvl = 0;
+		var lvl = max;
+		var foundLvl = 0;
 
-	var ivs = possibleIVs(pokemon.name, pokemon.cp, pokemon.hp, pokemon.star_dust)
-	for (var i = 0; i < ivs.ivs.length; i++) {
-		var cur_iv = ivs.ivs[i];
-		if (
-			( cur_iv.attackIV == pokemon.attackIV )
-			&& (cur_iv.staminaIV == pokemon.staminaIV)
-			&& (cur_iv.defenseIV == pokemon.defenseIV)
-		) {
-			foundLvl = cur_iv.level;
-			break;
-		}
-	}
-
-	if (foundLvl) {
-		for (var i = 0; i < potentialLevels[i].level; i++) {
-			if (potentialLevels[i].level == foundLvl) {
-				lvl = potentialLevels[i];
+		var ivs = possibleIVs(pokemon.name, pokemon.cp, pokemon.hp, pokemon.star_dust)
+		for (var i = 0; i < ivs.ivs.length; i++) {
+			var cur_iv = ivs.ivs[i];
+			if (
+				( cur_iv.attackIV == pokemon.attackIV )
+				&& (cur_iv.staminaIV == pokemon.staminaIV)
+				&& (cur_iv.defenseIV == pokemon.defenseIV)
+			) {
+				foundLvl = cur_iv.level;
 				break;
 			}
 		}
+
+		if (foundLvl) {
+			for (var i = 0; i < potentialLevels[i].level; i++) {
+				if (potentialLevels[i].level == foundLvl) {
+					lvl = potentialLevels[i];
+					break;
+				}
+			}
+		}
+
+		lvl.lvl = lvl.level / 2;
+		pokemon.level = lvl;
 	}
 
-	lvl.level = lvl.level / 2;
-	pokemon.level = lvl;
+	if (pokemon.trainer_level) {
+		// =MIN(B5+1.5,MATCH(SQRT(B4*10/((INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,1)+$B$6)^0.5*(INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,2)+$B$6)*(INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,3)+$B$6)^0.5))-0.0001,$CpM_RAW.$B$2:$B$80,1)/2+0.5)
+		// MIN(max_lvl, )
+		// sqrt( cp * 10 / ((stam + iv)^2 * (atk + iv) * def + iv )^2)
+		// stam, atk, def
+		var max = levelUpData.levelByLevel((pokemon.trainer_level * 2) + 3);
+		var pd  = getPokedex(pokemon);
+		var ivs = getIVs(pokemon);
+		var lvl = levelUpData.closestCPM( Math.sqrt( pokemon.cp * 10 / ( Math.pow(pd.stamina + ivs.stamina,0.5) * (pd.attack + ivs.attack) * Math.pow(pd.defense + ivs.defense,0.5)  )) )
+		if (max.level < lvl.level) {
+			lvl = max;
+		}
+
+		lvl.lvl = lvl.level / 2;
+		pokemon.level = lvl;
+	}
 	return pokemon.level;
 }
 
@@ -269,6 +291,15 @@ function getIVs(pokemon) {
 		pokemon.ivs = iv;
 		return iv;
 	}
+	if (pokemon.assume_ivs) {
+		var iv = { 
+			attack: +pokemon.assume_ivs,
+			defense: +pokemon.assume_ivs,
+			stamina: +pokemon.assume_ivs
+		}
+		pokemon.ivs = iv;
+		return iv;
+	}
 }
 
 function pokemonAtk (pokemon) {
@@ -281,21 +312,83 @@ function pokemonAtk (pokemon) {
 	return Math.round(lvl.cpScalar * (pd.attack + iv.attack) * 10) / 10;
 }
 
+function pokemondCpM (pokemon) {
+	// =((B4*10/((INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,1)+$B$6)^0.5*(INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,2)+$B$6)*(INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,3)+$B$6)^0.5))-(B4*10/((INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,1)+15)^0.5*(INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,2)+15)*(INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,3)+15)^0.5)))/INDEX($CpM_RAW.$B$2:$B$80,$B$15*2-1)
+
+	// -(B4*10/((INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,1)+15)^0.5*(INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,2)+15)*(INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,3)+15)^0.5)))/INDEX($CpM_RAW.$B$2:$B$80,$B$15*2-1)
+
+	var ivs = getIVs(pokemon);
+	var pd  = getPokedex(pokemon);
+	var lvl = pokemonLevel(pokemon);
+
+	var a1 = pokemon.cp * 10 / (Math.pow(pd.stamina + ivs.stamina,0.5) * (pd.attack + ivs.attack) * Math.pow(pd.defense + ivs.defense,0.5));
+	var a2 = pokemon.cp * 10 / (Math.pow(pd.stamina + 15,0.5) * (pd.attack + 15) * Math.pow(pd.defense + 15,0.5));
+
+	var dCpM = (a1 - a2) / lvl.cpScalar;
+	return dCpM;
+}
+
+function pokemonDef (pokemon) {
+	// =INDEX($CpM_RAW.$B$2:$B$80,$B$15*2-1)*(INDEX($PokeDex_RAW.$C$2:$E$152,$B$3,3)+$B$6+(15-$B$6)*(1-$B$14))
+	// cpm * def + iv.def + (15 - iv.def) * (1 - dCpm)
+	var lvl = pokemonLevel(pokemon);
+	var pd  = getPokedex(pokemon);
+	var iv  = getIVs(pokemon);
+
+	var dCpM = pokemondCpM(pokemon);
+
+	return lvl.cpScalar * (pd.defense + iv.defense + (15 - iv.defense) * (1 - dCpM));
+
+	// return Math.round(lvl.cpScalar * (pd.defense + iv.defense + (15 - iv.defense) * (1 - dCpM)) * 100) / 100;
+}
+
 function moveSet(pokemon) {
-	return {
-		fastPower: 9,
+	if (pokemon.moveSet) {
+		return pokemon.moveSet;
 	}
+	var fast = fastMoves.moveByName(pokemon.fast);
+	var pd   = getPokedex(pokemon);
+	var ms   = {};
+
+	ms.fastType       = fast.type;
+	ms.fastPower      = fast.power;
+	ms.fastName       = fast.name;
+	ms.fastDuration   = fast.duration / 1000;
+	if (
+		(fast.type.toLowerCase() === pd.type1.toLowerCase())
+		|| (fast.type.toLowerCase() === pd.type2.toLowerCase())
+
+	) {
+		ms.fastMultiplier = 1.25;
+	}
+	else {
+		ms.fastMultiplier = 1;
+	}
+	pokemon.moveSet = ms;
+	return ms;
+}
+
+function getMultiplier(atkType, defType) {
+	return multipliers[defType.toUpperCase().substring(0,3)][atkType];
 }
 
 function fastDPS (attacker, defender) {
 	// My_Team.AL
 	/* =ROUND((($Inputs.$B$30*$AC2*INDEX($Move_Sets.$O$3:$O$854,$Z2)/$B$18)*INDEX($Move_Sets.$R$3:$R$854,$Z2)*AQ2+$Inputs.$B$31),0)/INDEX($Move_Sets.$P$3:$P$854,$Z2) */
-	//                             9
-	return 7.41;
+	//         (   dmgMult   * atk * moveSet.fastPower              / def_def )  * fastMultiplier * mod_fast + dmg_Constant / fastDuration 
 
-	// Math.round((( damageMultiplier * pokemonAtk(attacker) * moveSet(attacker).fastPower )))
 
-	// Math.Round(((damageMultiplier * atk(attacker) * moveSet(attacker).fastPower / def(defender) * move_sets_thing * fast_modifier ))) / move_sets_thing
+	// =INDEX($Multipliers_RAW.$B$3:$T$21,INDEX($Move_Sets.$N$3:$N$854,$Z2),INDEX($Move_Sets.$E$3:$E$854,$My_Team.$B$24))*INDEX($Multipliers_RAW.$B$3:$T$21,INDEX($Move_Sets.$N$3:$N$854,$Z2),INDEX($Move_Sets.$F$3:$F$854,$My_Team.$B$24))
+	//                                         fast_type                              defender_type                      *  fast_type  def_type2
+
+	var ms       = moveSet(attacker);
+	var def      = getPokedex(defender);
+	var modifier = getMultiplier(ms.fastType, def.type1) * getMultiplier(ms.fastType, def.type2);
+
+	var a1 = damageMultiplier * pokemonAtk(attacker) * ms.fastPower / pokemonDef(defender);
+	var a2 = Math.round(a1 * ms.fastMultiplier * modifier + damageConstant);
+	return a2 / ms.fastDuration;
+
 
 }
 
@@ -307,6 +400,7 @@ module.exports = {
 
 	fastDPS,
 	pokemonAtk,
+	pokemonDef,
 	pokemonLevel,
 	moveSet
 };

@@ -111,7 +111,22 @@ module.exports = {
 	levelsByCandy : function (candy) {
 		candy = parseInt(candy, 10);
 		return lookup.byCandy[candy].slice();
-	}
+	},
+  levelByLevel : function (level) {
+    level = parseInt(level, 10);
+    return lookup.byLevel[level];
+  },
+  closestCPM : function (cpm) {
+    var closest = 1;
+    var found;
+    for (var i = 0; i < levels.length; i++) {
+      if (Math.abs(levels[i].cpScalar - cpm) < closest) {
+        closest = Math.abs(levels[i].cpScalar - cpm);
+        found = levels[i];
+      }
+    }
+    return found;
+  }
 };
 
 

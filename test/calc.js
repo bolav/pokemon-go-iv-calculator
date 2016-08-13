@@ -37,6 +37,18 @@ describe('calculator', function () {
     attackIV: '15',
     defenseIV: '7'
   }
+  const atk3 = {
+    name: 'Rhydon',
+    fast: 'Rock Smash',
+    special: 'Megahorn',
+    cp: '430',
+    hp: '76',
+    star_dust: '800',
+    staminaIV: '9',
+    attackIV: '15',
+    defenseIV: '14'
+  }
+
 
   const def = {
     name: 'Snorlax',
@@ -65,20 +77,27 @@ describe('calculator', function () {
   }),
   describe('pokemonLevel', function () {
     it('should return correct level', function () {
-      assert.equal(calc.pokemonLevel(atk1).level, 20, 'level is 20');
-      assert.equal(calc.pokemonLevel(atk2).level, 20.5, 'level is 20.5');
+      assert.equal(calc.pokemonLevel(atk1).lvl, 20, 'level is 20');
+      assert.equal(calc.pokemonLevel(atk2).lvl, 20.5, 'level is 20.5');
+      assert.equal(calc.pokemonLevel(def).lvl, 22, 'level is 22');
     });
   }),
   describe('pokemonAtk', function () {
     it('should return correct attack', function () {
-      assert.equal(calc.pokemonAtk(atk1), 117.7, 'atk is 117.7');
-      assert.equal(calc.pokemonAtk(atk2), 160.3, 'atk is 160.3');
+      assert.approximately(calc.pokemonAtk(atk1), 117.7, 0.1, 'atk is 117.7');
+      assert.approximately(calc.pokemonAtk(atk2), 160.3, 0.1, 'atk is 160.3');
+    });
+  }),
+  describe('pokemonDef', function () {
+    it('should return correct defense', function () {
+      assert.approximately(calc.pokemonDef(def), 121.82, 0.1, 'def is 121.82');
     });
   }),
   describe('fastDPS', function () {
     it('should return correct fastDPS', function () {
-      assert.equal(calc.fastDPS(atk1), 7.41, 'Fast_DPS is 7.41');
-      assert.equal(calc.fastDPS(atk2), 7.52, 'Fast_DPS is 7.52');
+      assert.approximately(calc.fastDPS(atk1, def), 7.41, 0.01, 'Fast_DPS is 7.41');
+      assert.approximately(calc.fastDPS(atk2, def), 7.52, 0.01, 'Fast_DPS is 7.52');
+      assert.approximately(calc.fastDPS(atk3, def), 3.55, 0.01, 'Fast_DPS is 3.55');
     });
   });
   describe('Spec_DPS', function () {}),
