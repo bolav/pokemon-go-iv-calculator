@@ -99,6 +99,13 @@ describe('calculator', function () {
       assert.approximately(calc.fastDPS(atk2, def), 7.52, 0.01, 'Fast_DPS is 7.52');
       assert.approximately(calc.fastDPS(atk3, def), 3.55, 0.01, 'Fast_DPS is 3.55');
     });
+  }),
+  describe('comboDPS', function () {
+    it('should return correct comboDPS', function () {
+      assert.approximately(calc.comboDPS(atk1, def), 9.98, 0.01, 'comboDPS is 9.98');
+      assert.approximately(calc.comboDPS(atk2, def), 10.48, 0.01, 'comboDPS is 10.48');
+      assert.approximately(calc.comboDPS(atk3, def), 4.58, 0.01, 'comboDPS is 4.58');
+    });
   });
   describe('Spec_DPS', function () {}),
   describe('Combo_DPS', function () {}),

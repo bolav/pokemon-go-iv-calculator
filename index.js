@@ -388,9 +388,28 @@ function fastDPS (attacker, defender) {
 	var a1 = damageMultiplier * pokemonAtk(attacker) * ms.fastPower / pokemonDef(defender);
 	var a2 = Math.round(a1 * ms.fastMultiplier * modifier + damageConstant);
 	return a2 / ms.fastDuration;
-
-
 }
+
+function comboDPS (attacker, defender) {
+	// My_Team.AN
+	// =((MAX(100-(100-INDEX($DPS_Calcs.$U$2:$U$853,$Z2))*AK2/$Inputs.$B$12,$Inputs.$B$26)/INDEX($Move_Sets.$Q$3:$Q$854,$Z2)+$Inputs.$B$35)*$AL2*INDEX($Move_Sets.$P$3:$P$854,$Z2)+$AM2*(INDEX($Move_Sets.$U$3:$U$854,$Z2)+$Inputs.$B$38)*INDEX($Move_Sets.$V$3:$V$854,$Z2))/((MAX(100-(100-INDEX($DPS_Calcs.$U$2:$U$853,$Z2))*AK2/$Inputs.$B$12,$Inputs.$B$26)/INDEX($Move_Sets.$Q$3:$Q$854,$Z2)+$Inputs.$B$35)*INDEX($Move_Sets.$P$3:$P$854,$Z2)+(INDEX($Move_Sets.$U$3:$U$854,$Z2)+$Inputs.$B$38)*INDEX($Move_Sets.$V$3:$V$854,$Z2))
+	//                         Ereq(3)                    DPS_def / defender_dps, min_generation / move_sets_fast_energy + errors in fast/special  * fast_dps * fast_duration + special_dps * special_duration  + time_to_cast           * charges                          /                       Ereq(3)                   
+	/* =ROUND((($Inputs.$B$30*$AC2*INDEX($Move_Sets.$O$3:$O$854,$Z2)/$B$18)*INDEX($Move_Sets.$R$3:$R$854,$Z2)*AQ2+$Inputs.$B$31),0)/INDEX($Move_Sets.$P$3:$P$854,$Z2) */
+	//         (   dmgMult   * atk * moveSet.fastPower              / def_def )  * fastMultiplier * mod_fast + dmg_Constant / fastDuration 
+
+
+	// =INDEX($Multipliers_RAW.$B$3:$T$21,INDEX($Move_Sets.$N$3:$N$854,$Z2),INDEX($Move_Sets.$E$3:$E$854,$My_Team.$B$24))*INDEX($Multipliers_RAW.$B$3:$T$21,INDEX($Move_Sets.$N$3:$N$854,$Z2),INDEX($Move_Sets.$F$3:$F$854,$My_Team.$B$24))
+	//                                         fast_type                              defender_type                      *  fast_type  def_type2
+
+	var ms       = moveSet(attacker);
+	var def      = getPokedex(defender);
+	var modifier = getMultiplier(ms.fastType, def.type1) * getMultiplier(ms.fastType, def.type2);
+
+	var a1 = damageMultiplier * pokemonAtk(attacker) * ms.fastPower / pokemonDef(defender);
+	var a2 = Math.round(a1 * ms.fastMultiplier * modifier + damageConstant);
+	return a2 / ms.fastDuration;
+}
+
 
 module.exports = {
 	evaluate,
@@ -399,6 +418,7 @@ module.exports = {
 	getPokemon,
 
 	fastDPS,
+	comboDPS,
 	pokemonAtk,
 	pokemonDef,
 	pokemonLevel,
