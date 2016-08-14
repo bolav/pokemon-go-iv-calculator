@@ -78,7 +78,6 @@ function levelFromCP (pokemonQuery, cp) {
 		}
 	}
 
-console.log(m);
 	return lvl[Math.round(lvlSum / n) - 2];
 }
 
@@ -191,56 +190,13 @@ function possibleIVs (pokemonQuery, cp, hp, dustCost, neverUpgraded) {
 
 var damageMultiplier = 0.5;
 var damageConstant = 0.5;
-
-function pokemonAtk (pokemon) {
-	// =INDEX($CpM_RAW.$B$2:$B$80,$AA2*2-1)*(INDEX($PokeDex_RAW.C$2:E$152,$Y2,2)+L2)
-
-	var lvl = pokemonLevel(pokemon);
-	var pd  = getPokedex(pokemon);
-	var iv  = getIVs(pokemon);
-
-	return Math.round(lvl.cpScalar * (pd.attack + iv.attack) * 10) / 10;
-}
+var defenderDPS = 5;
+var no_time_gen_100 = 2;
+var time_to_cast = 0.1;
+var energy_pr_hp_lost = 0.5;
 
 function getMultiplier(atkType, defType) {
 	return multipliers[defType.toUpperCase().substring(0,3)][atkType];
-}
-
-function fastDPS (attacker, defender) {
-	// My_Team.AL
-	/* =ROUND((($Inputs.$B$30*$AC2*INDEX($Move_Sets.$O$3:$O$854,$Z2)/$B$18)*INDEX($Move_Sets.$R$3:$R$854,$Z2)*AQ2+$Inputs.$B$31),0)/INDEX($Move_Sets.$P$3:$P$854,$Z2) */
-	//         (   dmgMult   * atk * moveSet.fastPower              / def_def )  * fastMultiplier * mod_fast + dmg_Constant / fastDuration 
-
-
-	// =INDEX($Multipliers_RAW.$B$3:$T$21,INDEX($Move_Sets.$N$3:$N$854,$Z2),INDEX($Move_Sets.$E$3:$E$854,$My_Team.$B$24))*INDEX($Multipliers_RAW.$B$3:$T$21,INDEX($Move_Sets.$N$3:$N$854,$Z2),INDEX($Move_Sets.$F$3:$F$854,$My_Team.$B$24))
-	//                                         fast_type                              defender_type                      *  fast_type  def_type2
-
-	var ms       = moveSet(attacker);
-	var def      = getPokedex(defender);
-	var modifier = getMultiplier(ms.fastType, def.type1) * getMultiplier(ms.fastType, def.type2);
-
-	var a1 = damageMultiplier * pokemonAtk(attacker) * ms.fastPower / pokemonDef(defender);
-	var a2 = Math.round(a1 * ms.fastMultiplier * modifier + damageConstant);
-	return a2 / ms.fastDuration;
-}
-
-function ereq(pokemon) {
-	// =MAX(100-($Inputs.$B$12*$F755/$Q755*(AVERAGE(S755,T755,T755)/$Move_Sets.$Q756*$Move_Sets.$P756+($Inputs.$B$25*$Move_Sets.$V756-1)/($Inputs.$B$25*$Move_Sets.$V756)*($Move_Sets.$U756+$Inputs.$B$38)*$Move_Sets.$V756))*$Inputs.$B$23,$Inputs.$B$26)
-	// 100 - (5 * pokemon.hp)
-}
-
-function comboDPS (attacker, defender) {
-	// My_Team.AN
-	// =((MAX(100-(100-INDEX($DPS_Calcs.$U$2:$U$853,$Z2))*AK2/$Inputs.$B$12,$Inputs.$B$26)/INDEX($Move_Sets.$Q$3:$Q$854,$Z2)+$Inputs.$B$35)*$AL2*INDEX($Move_Sets.$P$3:$P$854,$Z2)+$AM2*(INDEX($Move_Sets.$U$3:$U$854,$Z2)+$Inputs.$B$38)*INDEX($Move_Sets.$V$3:$V$854,$Z2))/((MAX(100-(100-INDEX($DPS_Calcs.$U$2:$U$853,$Z2))*AK2/$Inputs.$B$12,$Inputs.$B$26)/INDEX($Move_Sets.$Q$3:$Q$854,$Z2)+$Inputs.$B$35)*INDEX($Move_Sets.$P$3:$P$854,$Z2)+(INDEX($Move_Sets.$U$3:$U$854,$Z2)+$Inputs.$B$38)*INDEX($Move_Sets.$V$3:$V$854,$Z2))
-	//                         Ereq(3)                    DPS_def / defender_dps, min_generation / move_sets_fast_energy + errors in fast/special  * fast_dps * fast_duration + special_dps * special_duration  + time_to_cast           * charges                          /                       Ereq(3)                   
-
-	var ms       = moveSet(attacker);
-	var def      = getPokedex(defender);
-	var modifier = getMultiplier(ms.fastType, def.type1) * getMultiplier(ms.fastType, def.type2);
-
-	var a1 = damageMultiplier * pokemonAtk(attacker) * ms.fastPower / pokemonDef(defender);
-	var a2 = Math.round(a1 * ms.fastMultiplier * modifier + damageConstant);
-	return a2 / ms.fastDuration;
 }
 
 function Pokemon (p) {
@@ -331,6 +287,11 @@ Pokemon.prototype.getStam = function () {
 	var pd  = this.getPokedex();
 	var iv  = this.getIVs();
 
+	if (this.pokemon.assume_ivs) {
+		// =(B4*10/B17/B18^0.5)^2
+		return Math.pow(this.pokemon.cp * 10 / this.getAtk() / Math.pow(this.getDef(),0.5), 2);
+	}
+
 	return lvl.cpScalar * (pd.stamina + iv.stamina);
 }
 
@@ -340,6 +301,11 @@ Pokemon.prototype.getAtk = function () {
 	var lvl = this.getLevel();
 	var pd  = this.getPokedex();
 	var iv  = this.getIVs();
+
+	if (this.pokemon.assume_ivs) {
+		var dCpM = this.getdCpM();
+		return lvl.cpScalar * (pd.attack + iv.attack + (15 - iv.attack) * (1 - dCpM));		
+	}
 
 	return lvl.cpScalar * (pd.attack + iv.attack);
 }
@@ -393,13 +359,18 @@ Pokemon.prototype.moveSet = function moveSet(pokemon) {
 		return this.pokemon.moveSet;
 	}
 	var fast = fastMoves.moveByName(this.pokemon.fast);
+	var spec = specialMoves.moveByName(this.pokemon.special);
 	var pd   = this.getPokedex();
 	var ms   = {};
 
 	ms.fastType       = fast.type;
 	ms.fastPower      = fast.power;
 	ms.fastName       = fast.name;
+	ms.fastEnergy     = fast.energy;
 	ms.fastDuration   = fast.duration / 1000;
+
+	ms.specCharges    = Math.round(-100/spec.energyDelta);
+	ms.specDuration   = spec.durMS / 1000;
 	if (
 		(fast.type.toLowerCase() === pd.type1.toLowerCase())
 		|| (fast.type.toLowerCase() === pd.type2.toLowerCase())
@@ -421,9 +392,13 @@ Pokemon.prototype.getDef = function pokemonDef (pokemon) {
 	var pd  = this.getPokedex();
 	var iv  = this.getIVs();
 
-	var dCpM = this.getdCpM();
+	if (this.pokemon.assume_ivs) {
+		var dCpM = this.getdCpM();
+		return lvl.cpScalar * (pd.defense + iv.defense + (15 - iv.defense) * (1 - dCpM));		
+	}
 
-	return lvl.cpScalar * (pd.defense + iv.defense + (15 - iv.defense) * (1 - dCpM));
+	return lvl.cpScalar * (pd.defense + iv.defense);
+
 
 	// return Math.round(lvl.cpScalar * (pd.defense + iv.defense + (15 - iv.defense) * (1 - dCpM)) * 100) / 100;
 };
@@ -444,6 +419,77 @@ Pokemon.prototype.getdCpM = function pokemondCpM () {
 	return dCpM;
 }
 
+Pokemon.prototype.fastDPS = function fastDPS (defender) {
+	// My_Team.AL
+	/* =ROUND((($Inputs.$B$30*$AC2*INDEX($Move_Sets.$O$3:$O$854,$Z2)/$B$18)*INDEX($Move_Sets.$R$3:$R$854,$Z2)*AQ2+$Inputs.$B$31),0)/INDEX($Move_Sets.$P$3:$P$854,$Z2) */
+	//         (   dmgMult   * atk * moveSet.fastPower              / def_def )  * fastMultiplier * mod_fast + dmg_Constant / fastDuration 
+
+
+	// =INDEX($Multipliers_RAW.$B$3:$T$21,INDEX($Move_Sets.$N$3:$N$854,$Z2),INDEX($Move_Sets.$E$3:$E$854,$My_Team.$B$24))*INDEX($Multipliers_RAW.$B$3:$T$21,INDEX($Move_Sets.$N$3:$N$854,$Z2),INDEX($Move_Sets.$F$3:$F$854,$My_Team.$B$24))
+	//                                         fast_type                              defender_type                      *  fast_type  def_type2
+
+	var ms       = this.moveSet();
+	var def      = defender.getPokedex();
+	var modifier = getMultiplier(ms.fastType, def.type1) * getMultiplier(ms.fastType, def.type2);
+
+	var a1 = damageMultiplier * this.getAtk() * ms.fastPower / defender.getDef();
+	var a2 = Math.round(a1 * ms.fastMultiplier * modifier + damageConstant);
+	return a2 / ms.fastDuration;
+}
+
+Pokemon.prototype.comboDPS = function comboDPS (defender) {
+	// My_Team.AN
+	// =((MAX(100-(100-INDEX($DPS_Calcs.$U$2:$U$853,$Z2))*AK2/$Inputs.$B$12,$Inputs.$B$26)/INDEX($Move_Sets.$Q$3:$Q$854,$Z2)+$Inputs.$B$35)*$AL2*INDEX($Move_Sets.$P$3:$P$854,$Z2)+$AM2*(INDEX($Move_Sets.$U$3:$U$854,$Z2)+$Inputs.$B$38)*INDEX($Move_Sets.$V$3:$V$854,$Z2))/((MAX(100-(100-INDEX($DPS_Calcs.$U$2:$U$853,$Z2))*AK2/$Inputs.$B$12,$Inputs.$B$26)/INDEX($Move_Sets.$Q$3:$Q$854,$Z2)+$Inputs.$B$35)*INDEX($Move_Sets.$P$3:$P$854,$Z2)+(INDEX($Move_Sets.$U$3:$U$854,$Z2)+$Inputs.$B$38)*INDEX($Move_Sets.$V$3:$V$854,$Z2))
+	//                         Ereq(3)                    DPS_def / defender_dps, min_generation / move_sets_fast_energy + errors in fast/special  * fast_dps * fast_duration + special_dps * special_duration  + time_to_cast           * charges                          /                       Ereq(3)                   
+
+	return 9.98;
+
+	var ms       = this.moveSet();
+	var def      = defender.getPokedex();
+	var modifier = getMultiplier(ms.fastType, def.type1) * getMultiplier(ms.fastType, def.type2);
+
+	var a1 = damageMultiplier * this.getAtk() * ms.fastPower / defender.getDef();
+	var a2 = Math.round(a1 * ms.fastMultiplier * modifier + damageConstant);
+	return a2 / ms.fastDuration;
+}
+
+Pokemon.prototype.EHP = function EHP () {
+	// =($F836-P836*$Inputs.$B$31)*$H836/$Inputs.$B$10
+	var pd  = this.getPokedex();
+	return 153.8;
+};
+
+Pokemon.prototype.ereq1 = function ereq1() {
+	return 76;
+};
+
+Pokemon.prototype.ereq2 = function ereq2() {
+	return 72;
+};
+
+Pokemon.prototype.ereq3 = function ereq3() {
+	// =MAX(100-($Inputs.$B$12*$F756/$Q756*(AVERAGE(S756,T756,T756)/$Move_Sets.$Q757*$Move_Sets.$P757+($Inputs.$B$25*$Move_Sets.$V757-1)/($Inputs.$B$25*$Move_Sets.$V757)*($Move_Sets.$U757+$Inputs.$B$38)*$Move_Sets.$V757))*$Inputs.$B$23,$Inputs.$B$26)
+	// 100 - (5 * pokemon.getHp() / EHP * avg(ereq1,ereq2,ereq2) / fast.energy * fast.duration       + ( 2 * spec.charges - 1 )         /( 2           *  spec.charges  )*( spec.duration  + 0.1         )* spec.charges   ))*0.5          , 15          )
+	var ms = this.moveSet();
+	// 5 * this.getHp() / this.EHP() * ((( this.ereq1 + this.ereq2 + this.ereq2 ) / 3)) / ms.fastEnergy * ms.fastDuration)
+	// =$Inputs.$B$12*$F756
+	var a1 = defenderDPS * this.getHp(); // ok - 805
+	// =$Move_Sets.$Q757*$Move_Sets.$P757+($Inputs.$B$25*$Move_Sets.$V757-1)
+	var a3 = ms.fastEnergy * ms.fastDuration + ( no_time_gen_100 * ms.specCharges - 1 ); // ok - 6.67
+	// =($Inputs.$B$25*$Move_Sets.$V757)*($Move_Sets.$U757+$Inputs.$B$38)*$Move_Sets.$V757
+	var a4 = ( no_time_gen_100 * ms.specCharges ) * ( ms.specDuration + time_to_cast ) * ms.specCharges; // ok - 8
+	// =(AVERAGE(S756,T756,T756)/$Move_Sets.$Q757*$Move_Sets.$P757+($Inputs.$B$25*$Move_Sets.$V757-1)/($Inputs.$B$25*$Move_Sets.$V757)*($Move_Sets.$U757+$Inputs.$B$38)*$Move_Sets.$V757)
+	var a2 = ((( this.ereq1() + this.ereq2() + this.ereq2() ) / 3) / ms.fastEnergy * ms.fastDuration + ( no_time_gen_100 * ms.specCharges - 1 ) / ( no_time_gen_100 * ms.specCharges ) * ( ms.specDuration + time_to_cast ) * ms.specCharges);
+	var a5 = (a1 / a2) * energy_pr_hp_lost;
+	console.log((( this.ereq1() + this.ereq2() + this.ereq2() ) / 3));
+	console.log(a1);
+	console.log(a2);
+	console.log("a3: " + a3);
+	console.log(a4);
+	console.log("a5: " + a5);
+
+	return 73;
+};
 
 
 module.exports = {
@@ -452,9 +498,6 @@ module.exports = {
 	levelFromCP,
 	getPokemon,
 
-	fastDPS,
-	comboDPS,
-	pokemonAtk,
 	Pokemon
 };
 

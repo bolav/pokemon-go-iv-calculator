@@ -62,7 +62,6 @@ describe('calculator', function () {
       assert.typeOf(atk1, 'object');
     }),
     it('should be a function', function () {
-      console.log(atk1);
       assert.typeOf(atk1.getHp, 'function');
     }),
     it('should return correct stam', function () {
@@ -91,36 +90,45 @@ describe('calculator', function () {
       assert.equal(atk2.moveSet().fastPower, 15, 'Correct power is 15');
     })
   }),
-  describe('pokemonLevel', function () {
+  describe('getLevel', function () {
     it('should return correct level', function () {
       assert.equal(atk1.getLevel().lvl, 20, 'level is 20');
       assert.equal(atk2.getLevel().lvl, 20.5, 'level is 20.5');
       assert.equal(def.getLevel().lvl, 22, 'level is 22');
     });
   }),
-  describe('pokemonAtk', function () {
+  describe('getAtk', function () {
     it('should return correct attack', function () {
       assert.approximately(atk1.getAtk(), 117.7, 0.1, 'atk is 117.7');
       assert.approximately(atk2.getAtk(), 160.3, 0.1, 'atk is 160.3');
+      assert.approximately(def.getAtk(), 121.82, 0.1, 'atk is 121.82');
     });
   }),
-  describe('pokemonDef', function () {
+  describe('getDef', function () {
     it('should return correct defense', function () {
+      assert.approximately(atk1.getDef(), 119.5, 0.1, 'def is 119.5');
+      assert.approximately(atk2.getDef(), 132.5, 0.1, 'def is 132.5');
       assert.approximately(def.getDef(), 121.82, 0.1, 'def is 121.82');
     });
   }),
   describe('fastDPS', function () {
     it('should return correct fastDPS', function () {
-      assert.approximately(calc.fastDPS(atk1, def), 7.41, 0.01, 'Fast_DPS is 7.41');
-      assert.approximately(calc.fastDPS(atk2, def), 7.52, 0.01, 'Fast_DPS is 7.52');
-      assert.approximately(calc.fastDPS(atk3, def), 3.55, 0.01, 'Fast_DPS is 3.55');
+      assert.approximately(atk1.fastDPS(def), 7.41, 0.01, 'Fast_DPS is 7.41');
+      assert.approximately(atk2.fastDPS(def), 7.52, 0.01, 'Fast_DPS is 7.52');
+      assert.approximately(atk3.fastDPS(def), 3.55, 0.01, 'Fast_DPS is 3.55');
     });
   }),
+  describe('ereq', function () {
+    it('should return correct ereq', function () {
+      assert.equal(atk1.ereq3(), 73, 'Correct ereq is 73');
+      assert.equal(atk2.ereq3(), 68, 'Correct power is 68');
+    });
+  });
   describe('comboDPS', function () {
     it('should return correct comboDPS', function () {
-      assert.approximately(calc.comboDPS(atk1, def), 9.98, 0.01, 'comboDPS is 9.98');
-      assert.approximately(calc.comboDPS(atk2, def), 10.48, 0.01, 'comboDPS is 10.48');
-      assert.approximately(calc.comboDPS(atk3, def), 4.58, 0.01, 'comboDPS is 4.58');
+      assert.approximately(atk1.comboDPS(def), 9.98, 0.01, 'comboDPS is 9.98');
+      assert.approximately(atk2.comboDPS(def), 10.48, 0.01, 'comboDPS is 10.48');
+      assert.approximately(atk3.comboDPS(def), 4.58, 0.01, 'comboDPS is 4.58');
     });
   });
   describe('Spec_DPS', function () {}),
