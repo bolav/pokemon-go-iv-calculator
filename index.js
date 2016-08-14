@@ -473,20 +473,14 @@ Pokemon.prototype.ereq3 = function ereq3() {
 	var ms = this.moveSet();
 	// 5 * this.getHp() / this.EHP() * ((( this.ereq1 + this.ereq2 + this.ereq2 ) / 3)) / ms.fastEnergy * ms.fastDuration)
 	// =$Inputs.$B$12*$F756
-	var a1 = defenderDPS * this.getHp(); // ok - 805
+	// var a1 = defenderDPS * this.getHp(); // ok - 805
 	// =$Move_Sets.$Q757*$Move_Sets.$P757+($Inputs.$B$25*$Move_Sets.$V757-1)
-	var a3 = ms.fastEnergy * ms.fastDuration + ( no_time_gen_100 * ms.specCharges - 1 ); // ok - 6.67
+	// var a3 = ms.fastEnergy * ms.fastDuration + ( no_time_gen_100 * ms.specCharges - 1 ); // ok - 6.67
 	// =($Inputs.$B$25*$Move_Sets.$V757)*($Move_Sets.$U757+$Inputs.$B$38)*$Move_Sets.$V757
-	var a4 = ( no_time_gen_100 * ms.specCharges ) * ( ms.specDuration + time_to_cast ) * ms.specCharges; // ok - 8
+	// var a4 = ( no_time_gen_100 * ms.specCharges ) * ( ms.specDuration + time_to_cast ) * ms.specCharges; // ok - 8
 	// =(AVERAGE(S756,T756,T756)/$Move_Sets.$Q757*$Move_Sets.$P757+($Inputs.$B$25*$Move_Sets.$V757-1)/($Inputs.$B$25*$Move_Sets.$V757)*($Move_Sets.$U757+$Inputs.$B$38)*$Move_Sets.$V757)
-	var a2 = ((( this.ereq1() + this.ereq2() + this.ereq2() ) / 3) / ms.fastEnergy * ms.fastDuration + ( no_time_gen_100 * ms.specCharges - 1 ) / ( no_time_gen_100 * ms.specCharges ) * ( ms.specDuration + time_to_cast ) * ms.specCharges);
-	var a5 = (a1 / a2) * energy_pr_hp_lost;
-	console.log((( this.ereq1() + this.ereq2() + this.ereq2() ) / 3));
-	console.log(a1);
-	console.log(a2);
-	console.log("a3: " + a3);
-	console.log(a4);
-	console.log("a5: " + a5);
+	var calc = (defenderDPS * this.getHp() / this.EHP() * ((( this.ereq1() + this.ereq2() + this.ereq2() ) / 3) / ms.fastEnergy * ms.fastDuration + ( no_time_gen_100 * ms.specCharges - 1 ) / ( no_time_gen_100 * ms.specCharges ) * ( ms.specDuration + time_to_cast ) * ms.specCharges))*energy_pr_hp_lost;
+	console.log("calc: " + calc);
 
 	return 73;
 };
