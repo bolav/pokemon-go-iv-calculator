@@ -50,8 +50,8 @@ describe('calculator', function () {
   });
   const def = new calc.Pokemon({
     name: 'Snorlax',
-    fast: 'Sleep',
-    special: 'Now',
+    fast: 'Lick',
+    special: 'Hyper Beam',
     cp: '1797',
     trainer_level: '22',
     assume_ivs: '5'
@@ -118,17 +118,51 @@ describe('calculator', function () {
       assert.approximately(atk3.fastDPS(def), 3.55, 0.01, 'Fast_DPS is 3.55');
     });
   }),
+  describe('fastPct', function () {
+    it('should return correct fastPct', function () {
+      assert.approximately(def.fastPct(atk1), 0.51, 0.01, 'fastPct is 0.51');
+    });
+  }),
+  describe('EHP', function () {
+    it('should return correct EHP', function () {
+      assert.approximately(atk1.EHP(def), 148.1, 0.1, 'Correct EHP is 148.1');
+      assert.approximately(atk2.EHP(def), 112.5, 0.1, 'Correct EHP is 112.5');
+    });
+  }),
+  describe('h_xy', function () {
+    it('should return correct h_xy', function () {
+      assert.approximately(atk1.h_xy(), 20.0, 0.1, 'Correct h_xy is 20.0');
+      assert.approximately(atk2.h_xy(), 15.2, 0.1, 'Correct h_xy is 15.2');
+    });
+  }),
+  describe('DPS_def', function () {
+    it('should return correct DPS_def', function () {
+      assert.approximately(atk1.DPS_def(def), 5.97, 0.01, 'Correct DPS_def is 5.97');
+      assert.approximately(atk2.DPS_def(def), 5.40, 0.01, 'Correct DPS_def is 5.40');
+    });
+  }),
   describe('ereq', function () {
     it('should return correct ereq', function () {
-      assert.equal(atk1.ereq3(), 73, 'Correct ereq is 73');
-      assert.equal(atk2.ereq3(), 68, 'Correct power is 68');
+      assert.approximately(atk1.ereq1(def), 75.15, 0.01, 'Correct ereq is 75.15');
+      assert.approximately(atk1.ereq2(def), 70.93, 0.01, 'Correct ereq is 70.93');
+      assert.approximately(atk1.ereq3(def), 71.82, 0.01, 'Correct ereq is 71.82');
+      assert.approximately(atk2.ereq1(def), 83.43, 0.02, 'Correct ereq is 83.43');
+      assert.approximately(atk2.ereq2(def), 70.89, 0.01, 'Correct ereq is 71.83');
+      assert.approximately(atk2.ereq3(def), 73.18, 0.02, 'Correct ereq is 73.98');
+    });
+  }),
+  describe('specialDPS', function () {
+    it('should return correct specialDPS', function () {
+      assert.approximately(atk1.specialDPS(def), 15.50, 0.02, 'specialDPS is 15.50');
+      assert.approximately(atk2.specialDPS(def), 15.88, 0.02, 'specialDPS is 15.88');
+      assert.approximately(atk3.specialDPS(def), 6.67, 0.02, 'specialDPS is 6.67');
     });
   });
   describe('comboDPS', function () {
     it('should return correct comboDPS', function () {
-      assert.approximately(atk1.comboDPS(def), 9.98, 0.01, 'comboDPS is 9.98');
-      assert.approximately(atk2.comboDPS(def), 10.48, 0.01, 'comboDPS is 10.48');
-      assert.approximately(atk3.comboDPS(def), 4.58, 0.01, 'comboDPS is 4.58');
+      assert.approximately(atk1.comboDPS(def), 9.98, 0.02, 'comboDPS is 9.98');
+      assert.approximately(atk2.comboDPS(def), 10.48, 0.02, 'comboDPS is 10.48');
+      assert.approximately(atk3.comboDPS(def), 4.58, 0.02, 'comboDPS is 4.58');
     });
   });
   describe('Spec_DPS', function () {}),
