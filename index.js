@@ -473,7 +473,14 @@ Pokemon.prototype.DPS_def = function DPS_def (defender) {
 	var fast_mod = getMultiplier(ms.fastType, def.type1) * getMultiplier(ms.fastType, def.type2);
 	var spec_mod = getMultiplier(ms.specType, def.type1) * getMultiplier(ms.specType, def.type2);
 
-	var calc = Math.round(defender.fastDPS(this)* fast_mod * defender.fastPct(this) *(def_ms.fastDuration + defender_delay_between))/(def_ms.fastDuration + defender_delay_between )+Math.round((1-defender.fastPct(this))*spec_mod*defender.specialDPS()*defender.getDef()/this.getDef()*(def_ms.specDuration+defender_delay_between))/(def_ms.specDuration+defender_delay_between);
+	var calc = Math.round(defender.fastDPS()* fast_mod * defender.fastPct() *(def_ms.fastDuration + defender_delay_between))/
+	// (INDEX($Move_Sets.$P$3:$P$854,$My_Team.$B$24)+$Inputs.$B$24)+ROUND((1-$B$32)*AU2*$B$29*$Inputs.$B$10/AD2*(INDEX($Move_Sets.$U$3:$U$854,$My_Team.$B$24)+$Inputs.$B$24),0)/(INDEX($Move_Sets.$U$3:$U$854,$My_Team.$B$24)+$Inputs.$B$24)
+	(def_ms.fastDuration + defender_delay_between )+Math.round((1-defender.fastPct())*spec_mod*defender.specialDPS()*defender.getDef()/this.getDef()*(def_ms.specDuration+defender_delay_between))/(def_ms.specDuration+defender_delay_between);
+	console.log(defender.fastDPS()* fast_mod * defender.fastPct()); // 0.5412500000000001 - ok
+	console.log(def_ms.fastDuration + defender_delay_between); // 2.5 - ok
+	console.log(Math.round(defender.fastDPS()* fast_mod * defender.fastPct() *(def_ms.fastDuration + defender_delay_between))); // 1 - ok
+	console.log(Math.round((1-defender.fastPct())*spec_mod*defender.specialDPS()*140/this.getDef()*(def_ms.specDuration+defender_delay_between)));
+
 	return calc;
 	return 5.97;
 }

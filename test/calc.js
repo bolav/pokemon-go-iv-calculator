@@ -116,6 +116,7 @@ describe('calculator', function () {
       assert.approximately(atk1.fastDPS(def), 7.41, 0.01, 'Fast_DPS is 7.41');
       assert.approximately(atk2.fastDPS(def), 7.52, 0.01, 'Fast_DPS is 7.52');
       assert.approximately(atk3.fastDPS(def), 3.55, 0.01, 'Fast_DPS is 3.55');
+      assert.approximately(def.fastDPS(), 1.07, 0.01, 'Fast_DPS is 3.55');
     });
   }),
   describe('fastPct', function () {
