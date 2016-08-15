@@ -80,7 +80,11 @@ describe('calculator', function () {
   describe('NO_Fast_Attacks', function () {}),
   describe('TDO_Cur', function () {}),
   describe('TDO_Cur', function () {}),
-  describe('TTK_atk', function () {}),
+  describe('TTK_atk', function () {
+    it('should return correct TTK', function () {
+      assert.approximately(atk1.TTK_atk(), 36.1, 0.1, 'TTK_atk is 36.1');
+    })
+  }),
   describe('TTK_def', function () {}),
   describe('DPS_atk', function () {}),
   describe('DPS_def', function () {}),
