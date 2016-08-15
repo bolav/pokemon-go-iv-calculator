@@ -173,5 +173,28 @@ describe('calculator', function () {
       assert.approximately(atk3.comboDPS(def), 5.14, 0.02, 'comboDPS is 5.14');
     });
   });
+  describe('should infer some values', function () {
+    var idef = new calc.Pokemon({
+      name: 'Hypno',
+      fast: 'Unknown',
+      special: 'Unknown',
+      cp: 962,
+      trainer_level: 17,
+      assume_ivs: '5'
+    });
+
+    var iatk = new calc.Pokemon({
+      name: 'Golduck',
+      fast: 'Confusion',
+      special: 'Hydro Pump',
+      cp: 1334,
+      hp: 102,
+      star_dust: 2500
+    });
+
+    it('should work', function () {
+      assert.approximately(iatk.Winner_HP(idef), -13.2, 0.1, 'Winner_HP is 13');
+    });
+  });
 
 });

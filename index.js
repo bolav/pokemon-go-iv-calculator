@@ -142,7 +142,6 @@ function determinePossibleIVs (pokemon, cp, hp, dust, neverUpgraded) {
 				});
 			}
 		}
-
 	}
 
 	var hpIVIndex;
@@ -331,7 +330,7 @@ Pokemon.prototype.getPokedex = function () {
 	}
 	this.pokemon.pokedex = pokedex.pokemonByName(this.pokemon.name) || pokedex.pokemonById(this.pokemon.name);
 	if (!this.pokemon.pokedex) {
-		return {error : `Could not find pokemon: ${pokemonQuery}`};
+		return {error : `Could not find pokemon: ${this.pokemon.name}`};
 	}
 	return this.pokemon.pokedex;
 }
@@ -340,6 +339,7 @@ Pokemon.prototype.getIVs = function getIVs() {
 	if (this.pokemon.ivs) {
 		return this.pokemon.ivs;
 	}
+
 	if (("attackIV" in this.pokemon) && ("defenseIV" in this.pokemon) && ("staminaIV" in this.pokemon)) {
 		var iv = { 
 			attack: +this.pokemon.attackIV,
@@ -358,15 +358,37 @@ Pokemon.prototype.getIVs = function getIVs() {
 		this.pokemon.ivs = iv;
 		return iv;
 	}
+	if (("name" in this.pokemon) && ("cp" in this.pokemon) && ("hp" in this.pokemon) && ("star_dust" in this.pokemon)) {
+
+		var res = evaluate(this.pokemon.name, this.pokemon.cp, this.pokemon.hp, this.pokemon.star_dust); 
+		var idx = Math.round(res.ivs.length / 2);
+		var iv = {
+			attack:  res.ivs[idx].attackIV,
+			defense: res.ivs[idx].defenseIV,
+			stamina: res.ivs[idx].staminaIV
+		};
+		this.pokemon.ivs = iv;
+		return iv;
+	}
 }
 
 Pokemon.prototype.moveSet = function moveSet(pokemon) {
 	if (this.pokemon.moveSet) {
 		return this.pokemon.moveSet;
 	}
-	var fast = fastMoves.moveByName(this.pokemon.fast);
-	var spec = specialMoves.moveByName(this.pokemon.special);
 	var pd   = this.getPokedex();
+	var fast = fastMoves.moveByName(this.pokemon.fast);
+	if (!fast) {
+		var m = pd.fastMoves.split(",");
+		m = m[0].trim();
+		fast = fastMoves.moveByName(m);
+	}
+	var spec = specialMoves.moveByName(this.pokemon.special);
+	if (!spec) {
+		var m = pd.specialMoves.split(",");
+		m = m[0].trim();
+		spec = specialMoves.moveByName(m);
+	}
 	var ms   = {};
 
 	ms.fastType       = fast.type;

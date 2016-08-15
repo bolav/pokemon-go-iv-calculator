@@ -4299,7 +4299,8 @@ module.exports = {
 	pokemonById : function (id) {
 		var pokeId = parseInt(id, 10);
 		return lookup.byId[pokeId];
-	}
+	},
+      pokemons: pokemon.slice()
 };
 
 
