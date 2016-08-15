@@ -138,8 +138,9 @@ describe('calculator', function () {
   }),
   describe('DPS_def', function () {
     it('should return correct DPS_def', function () {
-      assert.approximately(atk1.DPS_def(def), 5.97, 0.01, 'Correct DPS_def is 5.97');
-      assert.approximately(atk2.DPS_def(def), 5.40, 0.01, 'Correct DPS_def is 5.40');
+      assert.approximately(atk1.DPS_def(def), 5.26, 0.01, 'Correct DPS_def is 5.26');
+      assert.approximately(atk2.DPS_def(def), 4.82, 0.01, 'Correct DPS_def is 4.82');
+      assert.approximately(atk3.DPS_def(def), 10.37, 0.01, 'Correct DPS_def is 10.37');
     });
   }),
   describe('ereq', function () {
@@ -161,9 +162,9 @@ describe('calculator', function () {
   });
   describe('comboDPS', function () {
     it('should return correct comboDPS', function () {
-      assert.approximately(atk1.comboDPS(def), 9.98, 0.02, 'comboDPS is 9.98');
-      assert.approximately(atk2.comboDPS(def), 10.48, 0.02, 'comboDPS is 10.48');
-      assert.approximately(atk3.comboDPS(def), 4.58, 0.02, 'comboDPS is 4.58');
+      assert.approximately(atk1.comboDPS(def), 9.89, 0.02, 'comboDPS is 9.89');
+      assert.approximately(atk2.comboDPS(def), 10.43, 0.02, 'comboDPS is 10.43');
+      assert.approximately(atk3.comboDPS(def), 5.14, 0.02, 'comboDPS is 5.14');
     });
   });
   describe('Spec_DPS', function () {}),
