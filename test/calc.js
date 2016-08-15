@@ -74,7 +74,12 @@ describe('calculator', function () {
     });
 
   }),
-  describe('Winner_HP_pct', function () {}),
+  describe('Winner_HP_pct', function () {
+    it('should return correct Winner_HP_pct', function () {
+      assert.approximately(atk1.Winner_HP_pct(def), -0.15, 0.01, 'Winner_HP_pct is 15');
+      assert.approximately(atk2.Winner_HP_pct(def), -0.33, 0.01, 'Winner_HP_pct is 33');
+    });
+  }),
   describe('TTK', function () {
     it('should return correct TTK_atk', function () {
       assert.approximately(atk1.TTK_atk(def), 36.1, 0.1, 'TTK_atk is 36.1');

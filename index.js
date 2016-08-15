@@ -484,12 +484,37 @@ Pokemon.prototype.DPS_atk = function DPS_atk (defender) {
 	return Math.max(this.fastDPS(defender), this.comboDPS(defender));
 }
 
+// Merge TTK_def and TTK_atk
 Pokemon.prototype.TTK_def = function TTK_def (defender) {
 	return this.getHp() / this.DPS_def(defender);
 }
 
 Pokemon.prototype.TTK_atk = function TTK_atk (defender) {
 	return defender.getHp() / this.DPS_atk(defender);
+}
+
+Pokemon.prototype.Winner_HP_pct = function Winner_HP_pct (defender) {
+	var winner_hp = this.Winner_HP(defender);
+	if (winner_hp < 0) {
+		return winner_hp / defender.getHp();
+	}
+	else {
+		return winner_hp / this.getHp();
+	}
+}
+
+Pokemon.prototype.Winner_HP = function Winner_HP (defender) {
+	var ttk_atk = this.TTK_atk(defender);
+	var ttk_def = this.TTK_def(defender);
+	if (ttk_atk > ttk_def) {
+		// Defense wins
+		return -(defender.getHp() - ttk_def * this.DPS_atk(defender));
+
+	}
+	else {
+		// Attacker wins
+		return this.getHp() - ttk_atk * this.DPS_def(defender);
+	}
 }
 
 Pokemon.prototype.specialDPS = function specialDPS (defender) {
