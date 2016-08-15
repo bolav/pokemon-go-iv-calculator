@@ -74,20 +74,17 @@ describe('calculator', function () {
     });
 
   }),
-  describe('TDO_Cur', function () {}),
-  describe('TDO_Def', function () {}),
   describe('Winner_HP_pct', function () {}),
-  describe('NO_Fast_Attacks', function () {}),
-  describe('TDO_Cur', function () {}),
-  describe('TDO_Cur', function () {}),
-  describe('TTK_atk', function () {
-    it('should return correct TTK', function () {
-      assert.approximately(atk1.TTK_atk(), 36.1, 0.1, 'TTK_atk is 36.1');
-    })
+  describe('TTK', function () {
+    it('should return correct TTK_atk', function () {
+      assert.approximately(atk1.TTK_atk(def), 36.1, 0.1, 'TTK_atk is 36.1');
+      assert.approximately(atk2.TTK_atk(def), 34.3, 0.1, 'TTK_atk is 34.3');
+    }),
+    it('should return correct TTK_def', function () {
+      assert.approximately(atk1.TTK_def(def), 30.6, 0.1, 'TTK_def is 30.6');
+      assert.approximately(atk2.TTK_def(def), 23.0, 0.1, 'TTK_def is 23.0');
+    });
   }),
-  describe('TTK_def', function () {}),
-  describe('DPS_atk', function () {}),
-  describe('DPS_def', function () {}),
   describe('moveSet', function () {
     it('should return correct power', function () {
       assert.equal(atk1.moveSet().fastPower, 9, 'Correct power is 9');
@@ -171,7 +168,5 @@ describe('calculator', function () {
       assert.approximately(atk3.comboDPS(def), 5.14, 0.02, 'comboDPS is 5.14');
     });
   });
-  describe('Spec_DPS', function () {}),
-  describe('Fast_pct', function () {});
 
 });

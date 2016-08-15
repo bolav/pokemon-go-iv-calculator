@@ -480,6 +480,18 @@ Pokemon.prototype.DPS_def = function DPS_def (defender) {
 	return calc;
 }
 
+Pokemon.prototype.DPS_atk = function DPS_atk (defender) {
+	return Math.max(this.fastDPS(defender), this.comboDPS(defender));
+}
+
+Pokemon.prototype.TTK_def = function TTK_def (defender) {
+	return this.getHp() / this.DPS_def(defender);
+}
+
+Pokemon.prototype.TTK_atk = function TTK_atk (defender) {
+	return defender.getHp() / this.DPS_atk(defender);
+}
+
 Pokemon.prototype.specialDPS = function specialDPS (defender) {
 	// =ROUND(($Inputs.$B$30*$AC2*INDEX($Move_Sets.$T$3:$T$854,$Z2)/$B$18)*INDEX($Move_Sets.$W$3:$W$854,$Z2)*AR2+$Inputs.$B$31,0)/(INDEX($Move_Sets.$U$3:$U$854,$Z2)+$Inputs.$B$38)
 	//       ((damageMultiplier*atk* specPower                     / cbd )* multi
