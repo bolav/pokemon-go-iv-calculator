@@ -40,6 +40,20 @@ function calcCP(attackIV, defenseIV, staminaIV, levelData, pokemon) {
 	return parseInt(attackFactor * defenseFactor * staminaFactor * scalarFactor / 10, 10);
 }
 
+function levelFromIVs (pokemonQuery, cp, atk, def, sta) {
+	const pokemon = pokedex.pokemonByName(pokemonQuery) || pokedex.pokemonById(pokemonQuery);
+	if (!pokemon) {
+		return {error : `Could not find pokemon: ${pokemonQuery}`};
+	}
+	var lvl = levelUpData.allLevels();
+	for (levelIndex = 0; levelIndex < lvl.length; levelIndex++) {
+		console.log(calcCP(atk, def, sta, lvl[levelIndex], pokemon));
+		if (calcCP(atk, def, sta, lvl[levelIndex], pokemon) === cp) {
+			console.log("Correct level");
+			return lvl[levelIndex];
+		}
+	}
+}
 
 function levelFromCP (pokemonQuery, cp) {
 	const pokemon = pokedex.pokemonByName(pokemonQuery) || pokedex.pokemonById(pokemonQuery);
@@ -628,6 +642,7 @@ module.exports = {
 	evaluate,
 	possibleIVs,
 	levelFromCP,
+	levelFromIVs,
 	getPokemon,
 
 	Pokemon

@@ -13,6 +13,14 @@ describe('calculator', function () {
     it('should have 3 alternatives', function () {
       assert.equal(result.ivs.length, 3, '3 alternatives');
     });
+    it('should return correct level', function () {
+      assert.equal(calc.levelFromIVs('Bulbasaur', 592, 15, 10, 12).level, 40);
+      assert.equal(calc.levelFromIVs('Charmander', 317, 1, 13, 15).level, 26);
+    });
+    it('should return correct stardust', function () {
+      assert.equal(calc.levelFromIVs('Bulbasaur', 592, 15, 10, 12).dust, 2500);
+      assert.equal(calc.levelFromIVs('Charmander', 317, 1, 13, 15).dust, 1600);
+    });
   });
 
   const atk1 = new calc.Pokemon({
