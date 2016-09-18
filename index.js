@@ -47,9 +47,7 @@ function levelFromIVs (pokemonQuery, cp, atk, def, sta) {
 	}
 	var lvl = levelUpData.allLevels();
 	for (levelIndex = 0; levelIndex < lvl.length; levelIndex++) {
-		console.log(calcCP(atk, def, sta, lvl[levelIndex], pokemon));
-		if (calcCP(atk, def, sta, lvl[levelIndex], pokemon) === cp) {
-			console.log("Correct level");
+		if (calcCP(atk, def, sta, lvl[levelIndex], pokemon) == cp) {
 			return lvl[levelIndex];
 		}
 	}
